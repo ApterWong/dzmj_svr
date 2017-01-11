@@ -1,6 +1,7 @@
 #ifndef CHUPAI_REQUEST_H
 #define CHUPAI_REQUEST_H
 
+#include "abstract_request.h"
 
 class chupai_request : public abstract_request
 {
