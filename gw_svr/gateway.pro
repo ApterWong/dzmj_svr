@@ -1,4 +1,4 @@
-LIBS += -levent -ljson11
+LIBS += -levent -ljson11 -luuid
 
 CONFIG += c++11
 
@@ -15,7 +15,8 @@ SOURCES += main.cpp \
     mj_util.cpp \
     login_svr_handler.cpp \
     worker_svr_handler.cpp \
-    cache_svr_handler.cpp
+    cache_svr_handler.cpp \
+    data_convert.c
 
 HEADERS += \
     event_handle.h \
@@ -24,4 +25,5 @@ HEADERS += \
     mj_util.h \
     login_svr_handler.h \
     worker_svr_handler.h \
-    cache_svr_handler.h
+    cache_svr_handler.h \
+    data_convert.h

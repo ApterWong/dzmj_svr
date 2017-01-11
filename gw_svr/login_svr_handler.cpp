@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char *LOGIN_SVR_ADDRESS = "127.0.0.1";
+const short int LOGIN_SVR_PORT = 8001;
+
 static struct bufferevent *g_login_svr_bev;
 
 static void (*handler_for_login_recv)(const char *buf);

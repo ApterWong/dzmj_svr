@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char *WORKER_SVR_ADDRESS = "127.0.0.1";
+const short int WORKER_SVR_PORT = 8002;
+
 static struct bufferevent *g_worker_svr_bev;
 
 static void (*handler_for_worker_recv)(const char *buf);

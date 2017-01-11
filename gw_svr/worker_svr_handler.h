@@ -1,9 +1,6 @@
 #ifndef WORKER_SVR_HANDLER_H
 #define WORKER_SVR_HANDLER_H
 
-const char *WORKER_SVR_ADDRESS = "127.0.0.1";
-const short int WORKER_SVR_PORT = 8002;
-
 /***
  *  @base: event_base* base;
  */

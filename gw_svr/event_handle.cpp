@@ -25,7 +25,7 @@ void do_signal(int, short, void *arg)
 {
     struct event_base *base = (struct event_base *)arg;
 
-    cout << "signal event..." << endl;
+    cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "signal event..." << endl;
 
     timeval tm{2,0};
     event_base_loopexit(base, &tm);
@@ -33,12 +33,12 @@ void do_signal(int, short, void *arg)
 
 void do_connect_read(bufferevent *bev, void *)
 {
-    struct evbuffer *input, *output;
+    struct evbuffer *input/*, *output*/;
     char *buf;
     size_t  rdbuflen = 0;
 
     input = bufferevent_get_input(bev);
-    output = bufferevent_get_output(bev);
+    /*output = bufferevent_get_output(bev);*/
 
     while(1)
     {
@@ -62,16 +62,25 @@ void do_connect_write(bufferevent *bev, void *arg)
 void do_connect_error(bufferevent *bev, short event, void *)
 {
     if(event & BEV_EVENT_EOF){
-        cout << "client " << bufferevent_getfd(bev) << " is closed." << endl;
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "client " << bufferevent_getfd(bev) << " is closed." << endl;
     }
     else if(event & BEV_EVENT_ERROR) {
-        cout << bufferevent_getfd(bev) << " has a error." << endl;
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << bufferevent_getfd(bev) << " has a error." << endl;
         perror("do_connect_error");
     }
 
     //erase map
     if(map_bev2userid.find(bev) != map_bev2userid.end())
-        map_bev2userid.erase(bev);
+    {
+        // 已经登录
+        if(map_bev2userid.find(bev) != map_bev2userid.end()) {
+            string uid = map_bev2userid[bev];
+
+            map_bev2userid.erase(bev);
+            map_userid2bev.erase(uid);
+        }
+        map_bev2unikey.erase(bev);
+    }
 
     bufferevent_free(bev);
 }
@@ -84,23 +93,24 @@ void do_login_recv(const char *buf)
     Json json = Json::parse(buf, err_string);
     if(json == nullptr)
     {
-        cout << "handler_for_login_recv:" << err_string << "\n";
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "handler_for_login_recv:" << err_string << "\n";
         return;
     }
 
     if(json["cli_data"].type() != Json::OBJECT || json["bev"].type() != Json::STRING)
     {
-        cout << "handler_for_login_recv: (json object err.)\n";
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "handler_for_login_recv: (json object err.)\n";
         return ;
     }
 
     string bev_string = json["bev"].string_value();
+    string uni_key    = json["uni_key"].string_value();
     struct bufferevent *bev = nullptr;
     uint64_t ptr;
 
     if(!mj_util::mj_atoi(bev_string, ptr))
     {
-        cout << "handler_for_login_recv: (bev_string error.)\n";
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "handler_for_login_recv: (bev_string error.)\n";
         return;
     }
 
@@ -116,7 +126,19 @@ void do_login_recv(const char *buf)
     {
         if(json["status"].type() == Json::STRING &&
                 json["status"].string_value() == string("ok"))
-            map_bev2userid[bev] = user_id;
+        {
+            auto iter = map_bev2unikey.find(bev);
+            if(iter != map_bev2unikey.end() && map_bev2unikey[bev] == uni_key)
+            {
+                map_bev2userid[bev] = user_id;
+                map_userid2bev[user_id] = bev;
+            }
+            else
+            {
+               cout << "[event_handle.cpp:" << __LINE__ <<"] uni_key mismatching " << uni_key << "\n";
+               return ;
+            }
+        }
     }
     else if(action == action_logout)
     {
@@ -137,27 +159,29 @@ void do_worker_recv(const char *buf)
     Json json = Json::parse(buf, err_string);
     if(json == nullptr)
     {
-        cout << "handler_for_worker_recv:" << err_string << "\n";
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "handler_for_worker_recv:" << err_string << "\n";
         return;
     }
 
     if(json["cli_data"].type() != Json::OBJECT || json["bev"].type() != Json::STRING)
     {
-        cout << "handler_for_worker_recv: (json object err.)\n";
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "handler_for_worker_recv: (json object err.)\n";
         return ;
     }
 
-    string bev_string = json["bev"].string_value();
-    struct bufferevent *bev = nullptr;
-    uint64_t ptr;
-
-    if(!mj_util::mj_atoi(bev_string, ptr))
-    {
-        cout << "handler_for_worker_recv: (bev_string error.)\n";
-        return;
+    string user_id = json["user_id"].string_value();
+    if(user_id.empty()) {
+        cout << "[event_handle.cpp:" << __LINE__ << "]handler_for_worker_recv()" << "user_id is empty.\n";
+        return ;
     }
 
-    bev = (struct bufferevent *)ptr;
+    if(map_userid2bev.find(user_id) == map_userid2bev.end()) {
+        cout << "[event_handle.cpp:" << __LINE__ << "]handler_for_worker_recv()" << "user_id is err." << user_id << "\n";
+        return ;
+    }
+
+    struct bufferevent *bev = map_userid2bev[user_id];
+
     json = json["cli_data"];
 
     /***  send data */
@@ -174,27 +198,29 @@ void do_cache_recv(const char *buf)
     Json json = Json::parse(buf, err_string);
     if(json == nullptr)
     {
-        cout << "handler_for_cache_recv:" << err_string << "\n";
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "handler_for_worker_recv:" << err_string << "\n";
         return;
     }
 
     if(json["cli_data"].type() != Json::OBJECT || json["bev"].type() != Json::STRING)
     {
-        cout << "handler_for_cache_recv: (json object err.)\n";
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "handler_for_worker_recv: (json object err.)\n";
         return ;
     }
 
-    string bev_string = json["bev"].string_value();
-    struct bufferevent *bev = nullptr;
-    uint64_t ptr;
-
-    if(!mj_util::mj_atoi(bev_string, ptr))
-    {
-        cout << "handler_for_worker_recv: (bev_string error.)\n";
-        return;
+    string user_id = json["user_id"].string_value();
+    if(user_id.empty()) {
+        cout << "[event_handle.cpp:" << __LINE__ << "]handler_for_worker_recv()" << "user_id is empty.\n";
+        return ;
     }
 
-    bev = (struct bufferevent *)ptr;
+    if(map_userid2bev.find(user_id) == map_userid2bev.end()) {
+        cout << "[event_handle.cpp:" << __LINE__ << "]handler_for_worker_recv()" << "user_id is err." << user_id << "\n";
+        return ;
+    }
+
+    struct bufferevent *bev = map_userid2bev[user_id];
+
     json = json["cli_data"];
 
     /***  send data */

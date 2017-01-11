@@ -1,6 +1,9 @@
 #include "mj_util.h"
 
+#include "data_convert.h"
+
 #include <algorithm>
+#include <uuid/uuid.h>
 
 std::string mj_util::mj_itoa(uint64_t num)
 {
@@ -39,4 +42,18 @@ bool mj_util::mj_atoi(const std::string &s_num, uint64_t &res)
 
     res = num;
     return true;
+}
+
+string mj_util::create_uuid()
+{
+    uuid_t uuid;
+    uuid_generate(uuid);
+
+    char ss_buf[64] = {0};
+    int ret = ObjToHex(ss_buf, uuid, sizeof(uuid));
+    if(ret != 0) {
+        return "";
+    }
+
+    return string(ss_buf);
 }
