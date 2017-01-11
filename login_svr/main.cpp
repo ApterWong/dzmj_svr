@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     // connect to cache svr
     init_cache_svr(base, NULL);
 
-    printf("login server starting...\n");
+    printf("login server start at port: %d...\n", PORT);
 
     event_base_dispatch(base);
 

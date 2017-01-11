@@ -83,7 +83,7 @@ void do_cache_read(bufferevent *bev, void *)
         }
 
         printf("recv from cache_svr %ld : %s\n", readlen, readbuf);
-
+        printf("缺省处理程序\n");
         //handler_for_cache_recv(readbuf);
 
         free(readbuf);
