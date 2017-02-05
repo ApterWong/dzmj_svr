@@ -30,12 +30,16 @@ struct room_data_object_t
     int max_pai_count;//当局最多能有几张牌
     int next_bupai;//下一张补牌牌位
 
-    uchar pailist[136];//所有的牌
-    uchar wang;
-    uchar last_card;
-    uchar timeout_card;
-    uchar last_chi[4];
-    uchar timeout_id;
+    //1,2抓牌时定方位，　3,4定王
+    char saizi1, saizi2;//, saizi3, saizi4;
+    char xw_card;
+
+    char pailist[136];//所有的牌
+    char wang;
+    char last_card;
+    char timeout_card;
+    char last_chi[4];
+    char timeout_id;
 };
 
 typedef shared_ptr<room_data_object_t> room_data_object;

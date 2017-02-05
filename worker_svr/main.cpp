@@ -7,7 +7,9 @@
 #include <signal.h>
 
 #include "event_handler.h"
-#include "cache_svr_handler.h"
+/*#include "cache_svr_handler.h"*/
+#include "timer_svr_handler.h"
+#include "sql_cli.h" // use init_mysql_connect();
 
 using namespace std;
 
@@ -32,7 +34,13 @@ int main(int argc, char *argv[])
     ev_signal = evsignal_new(base, SIGINT, do_signal, (void *)base);
 
     // connect to cache svr
-    init_cache_svr(base, NULL);
+    //init_cache_svr(base, NULL);
+
+    //connect to timer_svr
+    init_timer_svr(base, nullptr);
+
+    // init mysql connect
+    init_sql_connect();
 
     printf("worker server start at port: %d...\n", WORKER_SVR_PORT);
 

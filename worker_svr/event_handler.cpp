@@ -1,5 +1,6 @@
 #include "event_handler.h"
 #include "cache_svr_handler.h" // use  write_data_to_cache_svr()
+#include "requests/requests_factory.h" // 工厂, 用来创建所有的请求(request)实例
 
 #include <cstring>
 #include <string>
@@ -108,9 +109,21 @@ string do_worker(const char *buf)
         return "";
     }
 
-    string user_id = json["user_id"].string_value();
+    /*string user_id = json["user_id"].string_value();
     json = json["cli_data"];
+    if(json == nullptr) {
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "] " <<
+                "do_worker():" << json_err << "\n";
+        return "";
+    }*/
 
+    abstract_request *request = nullptr;
+    request = requests_factory::create_request(json);
 
-
+    if(request == nullptr) {
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "] " <<
+                "do_worker(): request is nullptr\n";
+        return "";
+    }
+    return request->handler();
 }

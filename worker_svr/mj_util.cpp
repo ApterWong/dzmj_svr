@@ -4,6 +4,9 @@
 
 #include <algorithm>
 #include <uuid/uuid.h>
+#include <atomic>
+#include <time.h>
+#include <stdlib.h>
 
 std::string mj_util::mj_itoa(uint64_t num)
 {
@@ -44,7 +47,7 @@ bool mj_util::mj_atoi(const std::string &s_num, uint64_t &res)
     return true;
 }
 
-string mj_util::create_uuid()
+std::string mj_util::create_uuid()
 {
     uuid_t uuid;
     uuid_generate(uuid);
@@ -55,5 +58,25 @@ string mj_util::create_uuid()
         return "";
     }
 
-    return string(ss_buf);
+    return std::string(ss_buf);
+}
+
+std::string mj_util::create_roomname()
+{
+    static std::atomic_ushort range = ATOMIC_FLAG_INIT;
+
+    struct timeval tm;
+    gettimeofday(&tm, NULL);
+
+    uint64_t name = tm.tv_sec *100000 + range.load();
+
+    range.fetch_add(1);
+
+    return mj_itoa(name);
+}
+
+int mj_util::create_saizi_number()
+{
+    srand(time(NULL));
+    return rand()%6+1;
 }

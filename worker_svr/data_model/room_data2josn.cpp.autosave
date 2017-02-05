@@ -1,0 +1,28 @@
+#include "room_data2josn.h"
+
+room_data2Josn::room_data2Josn()
+    :valid(false)
+{
+    
+}
+
+void room_data2Josn::setObject(room_data_object &obj)
+{
+    this->data = obj;
+    this->valid = true;
+}
+
+Json room_data2Josn::getRoomJosnData()
+{
+    Json json = Json::object({
+                                 {},
+                                 {},
+                                 {},
+                                 {},
+                                 {},
+                                 {},
+                                 {},
+                                 {}
+                             });
+}
+

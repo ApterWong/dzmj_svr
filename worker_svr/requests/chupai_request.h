@@ -6,7 +6,14 @@
 class chupai_request : public abstract_request
 {
 public:
-    chupai_request();
+    chupai_request(Json &json);
+
+    string handler();
+
+private:
+    string roomid;
+    string user_id;
+    char card;
 };
 
 #endif // CHUPAI_REQUEST_H
