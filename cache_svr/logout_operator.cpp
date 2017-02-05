@@ -13,8 +13,9 @@ string logout_operator::handler()
     CRedisClient *rds = redis_instance::getInstance();
 
     //出错返回值
-    Json json = Json::object({{"action","login"}, {"msg","服务器错误"},
-                              {"status","error"}, {"bev", bev_string}});
+    Json json = Json::object({{"action","login"}, {"what","服务器错误"},
+                              {"status","error"}});
+    json = Json::object({{"cli_data", json}, {"bev", bev_string}});
     string result_json = json.dump();
 
     string key = "status:"+user_id;
@@ -37,8 +38,8 @@ string logout_operator::handler()
             rds->hset(key, "status", string("leave"));// 挂机/托管
         }
     }
-    catch(CRedisException &e){
-        cout << "logout_operator::handler err:" << e.what() << "\n";
+    catch(const CRedisException &e){
+        cout << "[" << "logout_operator.cpp" << ":" << __LINE__ << "] " << "logout_operator::handler err:" << e.what() << "\n";
         return result_json;
     }
 

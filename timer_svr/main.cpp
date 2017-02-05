@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(CACHE_SVR_PORT);
+    addr.sin_port = htons(TIMER_SVR_PORT);
 
     // listen new connect
     listener = evconnlistener_new_bind(base, do_accept, base, LEV_OPT_REUSEABLE|LEV_OPT_CLOSE_ON_FREE,
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     // new signal event
     ev_signal = evsignal_new(base, SIGINT, do_signal, (void *)base);
 
-    printf("cache server start at port: %d...\n", CACHE_SVR_PORT);
+    printf("timer server start at port: %d...\n", TIMER_SVR_PORT);
     event_base_dispatch(base);
 
     evconnlistener_free(listener);

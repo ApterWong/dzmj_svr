@@ -33,7 +33,7 @@ void do_signal(evutil_socket_t fd, short event, void *arg)
 {
     struct event_base *base = (struct event_base *)arg;
 
-    cout << "signal event..." << endl;
+    cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "] " << "signal event..." << endl;
 
     timeval tm{2,0};
     event_base_loopexit(base, &tm);
@@ -56,7 +56,7 @@ void do_connect_read(struct bufferevent *bev, void *arg)
             break;
         }
 
-        cout << bufferevent_getfd(bev) << " " << "recv " << rdbuflen << " :"
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "] " << bufferevent_getfd(bev) << " " << "recv " << rdbuflen << " :"
              << buf << endl;
 
         Json json = Json::parse(buf, json_err);
@@ -76,7 +76,7 @@ void do_connect_read(struct bufferevent *bev, void *arg)
         else {
             string res = do_worker(json);
 
-            cout << "do worker's result size:" << res.length() <<  " data: " << res << endl;
+            cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "] " << "do worker's result size:" << res.length() <<  " data: " << res << endl;
 
             //正常执行, 没有特别情况需要反馈
             if(res.empty())
@@ -102,10 +102,10 @@ void do_connect_write(struct bufferevent *bev, void *arg)
 void do_connect_error(struct bufferevent *bev, short event, void *arg)
 {
     if(event & BEV_EVENT_EOF){
-        cout << bufferevent_getfd(bev) << " is closed." << endl;
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "] " << bufferevent_getfd(bev) << " is closed." << endl;
     }
     else if(event & BEV_EVENT_ERROR) {
-        cout << bufferevent_getfd(bev) << " has a error." << endl;
+        cout << "[" << "event_handler.cpp" << ":" << __LINE__ << "] " << bufferevent_getfd(bev) << " has a error." << endl;
         perror("do_connect_error");
     }
 
@@ -121,6 +121,9 @@ string do_worker(Json &json)
     string action = json["action"].string_value();
     string bev    = json["bev"].string_value();
 
+    /***
+     *  login
+     */
     if(action == "login") {
         string user_id = json["user_id"].string_value();
         string session = json["session"].string_value();
@@ -132,6 +135,9 @@ string do_worker(Json &json)
         if(!result.empty())
             write_data_to_gateway(result);
     }
+    /***
+     *  logout
+     */
     else if(action == "logout") {
         string user_id = json["user_id"].string_value();
         string session = json["session"].string_value();

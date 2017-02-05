@@ -15,7 +15,8 @@ string login_operator::handler()
 
     //出错返回值
     Json json = Json::object({{"action","login"}, {"msg","服务器错误"},
-                              {"status","error"}, {"bev", bevstring}});
+                              {"status","error"}});
+    json = Json::object({{"cli_data", json}, {"bev", bevstring}});
     string result_json = json.dump();
 
     string key = "status:"+user_id;
@@ -30,7 +31,7 @@ string login_operator::handler()
     }
     catch(CRedisException &e){
         rds->del(key);
-        cout << "login_operator err:" << e.what() << "\n";
+        cout << "[" << "login_operator.cpp" << ":" << __LINE__ << "] " << "login_operator err:" << e.what() << "\n";
         return result_json;
     }
 
@@ -43,6 +44,7 @@ string login_operator::handler()
 
     //逃跑&掉线
     json = Json::object({{"action", "login"},{"msg","您有一局游戏还没有结束"},
-                        {"status", "inform"},{"bev", bevstring}});
+                        {"status", "inform"}});
+    json = Json::object({{"cli_data", json}, {"bev", bevstring}});
     return json.dump();
 }
