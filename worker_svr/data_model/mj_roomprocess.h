@@ -8,20 +8,38 @@
 
 class mj_roomprocess
 {
+    /**
+     * @brief 根据card获取当前玩家可以吃的所有组合,存入result中
+     * @param obj
+     * @param card
+     * @param result
+     */
+    void get_cchi_list(user_data_object &obj, char card, vector<string> &result);
+
 public:
     mj_roomprocess(string &room_name);
     mj_roomprocess(const mj_roomprocess&) = delete;
     ~mj_roomprocess();
 
+    /**
+     * @brief 胡杠碰吃策略 enum
+     */
+    enum hgpc_plocy {
+        P_Hu    = 1,
+        P_Gang  = 2,
+        P_Peng  = 4,
+        P_Chi   = 8
+    };
+
     void load();
     void store();
 
-    /***
-     *  开始一局游戏,
+    /**
+     *  @brief:     开始一局游戏,
      *  @users:     IN  四位玩家, 0下标玩家是庄家
      *  @roomdata:  OUT 房间数据
      *  @userdatas: OUT 玩家数据
-     *  ret:　房间号ID
+     *  ret:        房间号ID
     */
     static string new_game(vector<std::string> &users, room_data_object &roomdata, vector<user_data_object> &userdatas);
 
@@ -40,10 +58,18 @@ public:
      *  @p: OUT.
      *  @c: OUT.
      */
-    void hint_hgpc(const string &uid, char card, vector<string> &h, vector<string> &g,
+    void hint_hgpc(const string &uid, char card, vector<int> &h, vector<int> &g, vector<int> &p,
                    vector<vector<string>> &c);
 
-    void analysis_hgpc(const string &uid, string &h, string &g, string &p, string &c);
+    /**
+     * @brief 分析uid玩家的胡杠碰吃, 并返回结果
+     * @param uid
+     * @param h
+     * @param g
+     * @param p
+     * @param c
+     */
+    void analysis_hgpc(const string &uid, string &h, string &g, string &p, vector<string> &c);
 
     //
     string chi(const string &uid, const string &c);

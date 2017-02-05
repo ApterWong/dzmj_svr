@@ -7,6 +7,11 @@
 const char *ROOM_KEY_PREFIX = "roomid:";
 const char *USER_KEY_PREFIX = "userid:";
 
+void mj_roomprocess::get_cchi_list(user_data_object &obj, char card, vector<string> &result)
+{
+
+}
+
 mj_roomprocess::mj_roomprocess(std::string &id)
 {
     this->room_id = id;
@@ -252,7 +257,7 @@ bool mj_roomprocess::chupai(const string &uid, char card)
         for(; i<userdata->paiCount; i++ ){
             if(card == userdata->paiList[i]) {
                 userdata->paiList[i] = userdata->NewCard;
-                std::sort(userdata->paiList, userdata->paiList+16, [](char a, char b){ return a>b; });//保证降序
+                std::sort(userdata->paiList, userdata->paiList+16, [](char a, char b){ return a<b; });//保证降序
             }
             if(i >= userdata->paiCount) {
                 cout << "[mj_roomprocess.cpp:" << __LINE__ << "]: not find chupai card.\n";
@@ -264,7 +269,7 @@ bool mj_roomprocess::chupai(const string &uid, char card)
     return true;
 }
 
-void mj_roomprocess::hint_hgpc(const string &uid, char card, vector<string> &h, vector<string> &g, vector<vector<string> > &c)
+void mj_roomprocess::hint_hgpc(const string &uid, char card, vector<int> &h, vector<int> &g, vector<int> &p, vector<vector<string> > &c)
 {
     uint64_t user_id;
     mj_util::mj_atoi(uid, user_id);
@@ -272,9 +277,64 @@ void mj_roomprocess::hint_hgpc(const string &uid, char card, vector<string> &h, 
     for(int i=0; i<4; i++) {
         auto &userdata = this->players[i];
 
-        if(user_id == userdata->user_id)
+        if(user_id == userdata->user_id) {
+            h.push_back(0);
+            g.push_back(0);
+            p.push_back(0);
+            c.push_back(vector<string>());
             continue;
+        }
 
+        /***
+         * 判断能胡
+         */
+        int j = 0;
+        for(; j<userdata->cHuCount; j++) {
+            if(card == userdata->cHuList[j]) {
+                room->players_plocy[i] |= P_Hu;
+                h.push_back(card);
+            }
+        }
+        if(j >= userdata->cHuCount)
+            h.push_back(0);
 
+        /***
+         * 判断能杠
+         */
+        j = 0;
+        for(; j<userdata->cGangCount; j++) {
+            if(card == userdata->cGangList[j]) {
+                room->players_plocy[i] |= P_Gang;
+                g.push_back(card);
+            }
+        }
+        if(j >= userdata->cGangCount)
+            g.push_back(0);
+
+        /***
+         * 判断能碰
+         */
+        j = 0;
+        for(; j<userdata->cPengCount; j++) {
+            if(card == userdata->cPengList[j]) {
+                room->players_plocy[i] |= P_Peng;
+                p.push_back(card);
+            }
+        }
+        if(j >= userdata->cPengCount)
+            p.push_back(0);
+
+        /***
+         * 判断能吃
+         */
+        vector<string> chilist;
+        j = 0;
+        for(; j<userdata->cChiCount; j++) {
+            if(card == userdata->cChiList[j])
+            {
+                this->get_cchi_list(userdata, card, chilist);
+            }
+        }
+        c.push_back(chilist);
     }
 }
